@@ -18,7 +18,7 @@ async def accepting_registration(call : CallbackQuery):
     user = User(user_id, name, surname)
     add_user(user)
     await call.bot.edit_message_caption(message_id=call.message.message_id, chat_id=call.message.chat.id, caption="Заявка одобрена", reply_markup=None)
-    await call.bot.send_message(user_id, "Вы были успешно зарегистрированы!", reply_markup=get_start_kb())
+    await call.bot.send_photo(user_id, photo=FSInputFile("falt.jpg"), caption="Вы были успешно зарегистрированы!", reply_markup=get_start_kb())
     
 @admin_router.callback_query(F.data.contains("admin_decline"))
 async def declining_registration(call : CallbackQuery):

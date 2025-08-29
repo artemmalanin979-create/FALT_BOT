@@ -44,11 +44,17 @@ class Schedule():
     def get_user_bookings(self, user_id):
         res = []
         uid = str(user_id)
+        today = datetime.now()
         for date, machines in self.schedule.items():
+            begin_date = map(int, *date.split("."))
             for machine_id, items in machines.items():
                 for booking in items:
                     if len(booking) >= 4 and str(booking[3]) == uid:
-                        res.append((date, machine_id, booking[0], booking[1], booking[2]))
+                        begin_time, end_time, username, _ = booking
+                        begin_date_with_time = datetime(begin_date[2], begin_date[1], begin_date[0], int(begin_time.split(":")[0]), int(begin_time.split(":")[1])) # Время для проверки на то, актуальна ли ещё запись
+                        if begin_date_with_time < today:
+                            continue
+                        res.append((date, machine_id, begin_time, end_time, username))
         return sorted(res, key=lambda x: (x[0], x[1], x[2]))
 
     def remove_booking(self, date, machine_id, start_time, end_time, user_id):
@@ -69,3 +75,4 @@ class Schedule():
             self.schedule[date][machine_id] = new_items
             self.save_schedule()
         return removed
+    
