@@ -46,7 +46,7 @@ class Schedule():
         uid = str(user_id)
         today = datetime.now()
         for date, machines in self.schedule.items():
-            begin_date = list(map(int, *date.split(".")))
+            begin_date = list(map(int, date.split(".")))
             for machine_id, items in machines.items():
                 for booking in items:
                     if len(booking) >= 4 and str(booking[3]) == uid:
