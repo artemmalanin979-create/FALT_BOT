@@ -15,7 +15,7 @@ def get_connection():
 def init_db():
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.executescript(open("database/init_db.sql", "r").read())
+    cursor.executescript(open("database/init_db.sql", "r", encoding="utf8").read())
     conn.commit()
     conn.close()
 
@@ -36,3 +36,11 @@ def is_registered(user_id) -> User | None:
     if user is not None:
         return User(user_id = user[1], name = user[2], surname = user[3], wallet=user[4], label=user[5])
     return None
+
+
+def get_machine_names() -> list[str]:
+    con = get_connection()
+    cur = con.cursor()
+    machine_names = cur.execute("SELECT name FROM washing_machines ORDER BY name ASC").fetchall()
+    con.close()
+    return [i[0] for i in machine_names]
