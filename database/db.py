@@ -44,3 +44,11 @@ def get_machine_names() -> list[str]:
     machine_names = cur.execute("SELECT name FROM washing_machines ORDER BY name ASC").fetchall()
     con.close()
     return [i[0] for i in machine_names]
+
+
+def get_machine_status(machine_name: str) -> bool:
+    con = get_connection()
+    cur = con.cursor()
+    machine_status = cur.execute("SELECT is_working FROM washing_machines WHERE name = ?", (machine_name, )).fetchone()
+    con.close()
+    return machine_status[0]
