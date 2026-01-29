@@ -52,3 +52,11 @@ def get_machine_status(machine_name: str) -> bool:
     machine_status = cur.execute("SELECT is_working FROM washing_machines WHERE name = ?", (machine_name, )).fetchone()
     con.close()
     return machine_status[0]
+
+
+def change_machine_status(machine_name: str) -> None:
+    con = get_connection()
+    cur = con.cursor()
+    cur.execute("UPDATE washing_machines SET is_working = not is_working WHERE name = ?", (machine_name, ))
+    con.commit()
+    con.close()
