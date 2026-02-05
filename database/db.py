@@ -60,3 +60,27 @@ def change_machine_status(machine_name: str) -> None:
     cur.execute("UPDATE washing_machines SET is_working = not is_working WHERE name = ?", (machine_name, ))
     con.commit()
     con.close()
+def add_registration_click(user_id: int):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO registration (user_id, is_registered) VALUES (?, ?)",
+                   (user_id, True, ))
+    conn.commit()
+    conn.close()
+
+
+def registration_clicked(user_id: int) -> bool:
+    conn = get_connection()
+    cursor = conn.cursor()
+    user = cursor.execute("SELECT * FROM registration WHERE user_id == ?", (user_id,)).fetchone()
+    if not user or not user[1]:
+        return False
+    return True
+
+
+def set_registration_click_status(user_id: int):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE registration SET is_registered = NOT(SELECT is_registered FROM registration WHERE user_id == ?) WHERE user_id == ?", (user_id, user_id))
+    conn.commit()
+    conn.close()

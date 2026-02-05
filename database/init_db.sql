@@ -30,3 +30,7 @@ INSERT OR IGNORE INTO washing_machines (name, is_working) VALUES
 ('#5', 1),
 ('#6 (Сушилка)', 1);
 
+CREATE TABLE IF NOT EXISTS registration (
+    user_id INTEGER PRIMARY KEY,
+    is_registered BOOLEAN
+)

@@ -22,7 +22,3 @@ async def cancel_action(call : CallbackQuery):
 @main_router.callback_query(F.data == "support")
 async def support(call : CallbackQuery):
     await call.message.edit_caption(caption='При возникновении проблем с ботом писать сюда: @zgeorgin', reply_markup=get_main_menu_kb(call.message.chat.id))
-    
-@main_router.callback_query(F.data == "studyroom_record")
-async def support(call : CallbackQuery):
-    await call.message.edit_caption(caption='Функция бронирования боталки скоро будет добавлена!', reply_markup=get_main_menu_kb(call.message.chat.id))
