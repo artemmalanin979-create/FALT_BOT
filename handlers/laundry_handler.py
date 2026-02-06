@@ -57,8 +57,6 @@ async def set_day(call: CallbackQuery, state: FSMContext):
 @laundry_router.callback_query(F.data.contains("Машинка"))
 async def set_machine(call: CallbackQuery, state: FSMContext):
     machine = call.data.split()[1]
-    if machine in ["4", "1"]:
-        return
     data = await state.update_data(machine=machine)
     try:
         os.remove(data["filepath"])
@@ -67,6 +65,11 @@ async def set_machine(call: CallbackQuery, state: FSMContext):
     schedule = Schedule(SCHEDULE_PATH)
     schedule.load_schedule()
     await call.message.edit_caption(caption=f"Выберите время:", reply_markup=record_set_time_kb(schedule, data["date"], data["machine"]))
+
+
+@laundry_router.callback_query(F.data == "broken")
+async def broken_machine(call: CallbackQuery):
+    await call.answer("Эта машинка на тех.обслуживании. Запись недоступна.", show_alert=True)
 
 @laundry_router.callback_query(F.data.contains("set_time"))
 async def set_time(call : CallbackQuery, state : FSMContext):
