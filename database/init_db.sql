@@ -15,6 +15,21 @@ CREATE TABLE IF NOT EXISTS laundry (
     FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
 
+
+CREATE TABLE IF NOT EXISTS washing_machines (
+    name TEXT PRIMARY KEY,
+    is_working BOOLEAN NOT NULL
+);
+
+
+INSERT OR IGNORE INTO washing_machines (name, is_working) VALUES
+('#1', 1),
+('#2', 1),
+('#3', 1),
+('#4', 0),
+('#5', 1),
+('#6 (Сушилка)', 1);
+
 CREATE TABLE IF NOT EXISTS registration (
     user_id INTEGER PRIMARY KEY,
     is_registered BOOLEAN
