@@ -15,7 +15,7 @@ class Schedule():
     
     def save_schedule(self):
         with open(self.filepath, "w") as file:
-            json.dump(self.schedule, file, indent=4)
+            json.dump(self.schedule, file, indent=4, ensure_ascii=False)
             
     def is_time_available(self, date, machine_id, start_time, end_time):
         if datetime.strptime(end_time, "%H:%M") <= datetime.strptime(start_time, "%H:%M"):

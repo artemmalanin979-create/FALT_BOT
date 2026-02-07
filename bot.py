@@ -1,12 +1,14 @@
 import logging
-from aiogram import Bot, Dispatcher
 import asyncio
+
+from aiogram import Bot, Dispatcher
 from handlers.main_menu_handler import main_router
 from handlers.registration_handler import reg_router
 from handlers.admin_interaction_handler import admin_router
 from handlers.laundry_handler import laundry_router
 from handlers.admin_manage_laundry import manage_laundry_router
 from handlers.study_room_handler import sr_router
+from handlers.wallet_handler import wallet_router
 from aiogram.methods import set_my_commands
 from aiogram.types import BotCommand, BotCommandScopeDefault
 from database.db import init_db
@@ -29,6 +31,7 @@ async def main():
     dp.include_router(laundry_router)
     dp.include_router(manage_laundry_router)
     dp.include_router(sr_router)
+    dp.include_router(wallet_router)
     await dp.start_polling(bot)
     await set_commands()
     
