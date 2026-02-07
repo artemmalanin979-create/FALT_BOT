@@ -11,7 +11,12 @@ from aiogram.types import CallbackQuery, Message, FSInputFile, InputMediaPhoto
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from config import LAUNDRY_PRICE_PER_HOUR_RUB, LAUNDRY_DATA_PATH as SCHEDULE_PATH
+from config import (
+    LAUNDRY_DATA_PATH as SCHEDULE_PATH,
+    LAUNDRY_PRICE_PER_HOUR_RUB,
+    LAUNDRY_PRICE_PER_HOUR_WASH_RUB,
+    LAUNDRY_PRICE_PER_HOUR_DRY_RUB,
+)
 from database.db import is_registered
 from keyboards.keyboards import get_cancel_kb, get_start_kb
 from keyboards.laundry_keyboards import record_set_day_kb, record_set_machine_kb, record_set_time_kb, cart_kb
@@ -35,11 +40,23 @@ class RecordInfo(StatesGroup):
     filepath = State()
 
 
-def _parse_hourly_rate() -> int:
+def _parse_hourly_rate(default_value: str | None) -> int:
     try:
-        return int(round(float(LAUNDRY_PRICE_PER_HOUR_RUB)))
+        if default_value is None:
+            return int(round(float(LAUNDRY_PRICE_PER_HOUR_RUB)))
+        return int(round(float(default_value)))
     except (TypeError, ValueError):
         return 75
+
+
+def _rate_for_machine(machine_id: str) -> int:
+    try:
+        is_dryer = int(machine_id) == 6
+    except ValueError:
+        is_dryer = False
+    if is_dryer:
+        return _parse_hourly_rate(LAUNDRY_PRICE_PER_HOUR_DRY_RUB)
+    return _parse_hourly_rate(LAUNDRY_PRICE_PER_HOUR_WASH_RUB)
 
 
 def _hours_for_interval(begin_time: str, end_time: str) -> int:
@@ -53,10 +70,12 @@ def _hours_for_interval(begin_time: str, end_time: str) -> int:
 
 def _calc_total_amount(records: list[tuple[str, str, str]]) -> tuple[int, int]:
     total_hours = 0
-    for _, begin_time, end_time in records:
-        total_hours += _hours_for_interval(begin_time, end_time)
-    rate = _parse_hourly_rate()
-    return int(total_hours * rate), total_hours
+    total_amount = 0
+    for machine_id, begin_time, end_time in records:
+        hours = _hours_for_interval(begin_time, end_time)
+        total_hours += hours
+        total_amount += hours * _rate_for_machine(machine_id)
+    return int(total_amount), total_hours
 
 @laundry_router.callback_query(lambda callback : callback.data in ["laundry_record","exit_from_record"])
 async def start_record(call : CallbackQuery, state : FSMContext):
@@ -142,7 +161,7 @@ async def laundry_cancel(call: CallbackQuery):
         await call.message.edit_caption(caption="Не удалось отменить запись (возможно, она уже удалена).", reply_markup=get_start_kb())
         return
     try:
-        refund_amount = _hours_for_interval(b, e) * _parse_hourly_rate()
+        refund_amount = _hours_for_interval(b, e) * _rate_for_machine(machine)
     except ValueError:
         refund_amount = 0
     if refund_amount > 0:
