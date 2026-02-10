@@ -59,22 +59,28 @@ def _rate_for_machine(machine_id: str) -> int:
     return _parse_hourly_rate(LAUNDRY_PRICE_PER_HOUR_WASH_RUB)
 
 
-def _hours_for_interval(begin_time: str, end_time: str) -> int:
+def _hours_for_interval(begin_time: str, end_time: str) -> float:
     start = datetime.strptime(begin_time, "%H:%M")
     end = datetime.strptime(end_time, "%H:%M")
     minutes = int((end - start).total_seconds() / 60)
     if minutes <= 0:
         raise ValueError("Invalid time interval")
-    return math.ceil(minutes / 60)
+    return minutes / 60
 
 
-def _calc_total_amount(records: list[tuple[str, str, str]]) -> tuple[int, int]:
-    total_hours = 0
+def _amount_for_record(machine_id: str, begin_time: str, end_time: str) -> int:
+    hours = _hours_for_interval(begin_time, end_time)
+    rate = _rate_for_machine(machine_id)
+    return int(round(hours * rate))
+
+
+def _calc_total_amount(records: list[tuple[str, str, str]]) -> tuple[int, float]:
+    total_hours = 0.0
     total_amount = 0
     for machine_id, begin_time, end_time in records:
         hours = _hours_for_interval(begin_time, end_time)
         total_hours += hours
-        total_amount += hours * _rate_for_machine(machine_id)
+        total_amount += _amount_for_record(machine_id, begin_time, end_time)
     return int(total_amount), total_hours
 
 @laundry_router.callback_query(lambda callback : callback.data in ["laundry_record","exit_from_record"])
@@ -161,7 +167,7 @@ async def laundry_cancel(call: CallbackQuery):
         await call.message.edit_caption(caption="Не удалось отменить запись (возможно, она уже удалена).", reply_markup=get_start_kb())
         return
     try:
-        refund_amount = _hours_for_interval(b, e) * _rate_for_machine(machine)
+        refund_amount = _amount_for_record(machine, b, e)
     except ValueError:
         refund_amount = 0
     if refund_amount > 0:
@@ -212,7 +218,7 @@ async def cart_view(message : Message, state : FSMContext):
     for record in data["all_laundries"]:
         msg_text += f"- Машинка {record[0]}: {record[1]}-{record[2]}\n"
     amount_rub, total_hours = _calc_total_amount(data["all_laundries"])
-    msg_text += f"\nСтоимость: {amount_rub} ₽ ({total_hours} ч.)"
+    msg_text += f"\nСтоимость: {amount_rub} ₽ ({total_hours:.2f} ч.)"
     await message.edit_caption(caption = msg_text, reply_markup=cart_kb(data["date"]))
     
 @laundry_router.callback_query(F.data == "laundry_pay")
