@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 from config import DB_PATH
 
+
 @dataclass
 class User:
     user_id: int
@@ -10,90 +11,73 @@ class User:
     surname: str
     wallet: float = 0.0
     email: Optional[str] = None
-    label: int = 0  # Для обратной совместимости с FALT_BOT
+
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def init_db():
     conn = get_connection()
     cur = conn.cursor()
 
-    # Основная таблица users (совместимая с FALT_BOT + Mini App)
-    cur.execute("""
+    cur.executescript("""
         CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            surname TEXT NOT NULL,
-            wallet REAL DEFAULT 0,
-            email TEXT UNIQUE,
-            label INTEGER DEFAULT 0
-        )
-    """)
+            user_id   INTEGER PRIMARY KEY,
+            name      TEXT NOT NULL,
+            surname   TEXT NOT NULL,
+            wallet    REAL DEFAULT 0,
+            email     TEXT UNIQUE
+        );
 
-    # Таблица кликов регистрации (из FALT_BOT)
-    cur.execute("""
         CREATE TABLE IF NOT EXISTS registration_clicks (
             user_id INTEGER PRIMARY KEY
-        )
-    """)
+        );
 
-    # Таблица стиральных машин (из FALT_BOT)
-    cur.execute("""
         CREATE TABLE IF NOT EXISTS washing_machines (
-            name TEXT PRIMARY KEY,
+            name       TEXT PRIMARY KEY,
             is_working INTEGER DEFAULT 1
-        )
-    """)
+        );
 
-    # Таблица транзакций кошелька (из FALT_BOT)
-    cur.execute("""
         CREATE TABLE IF NOT EXISTS wallet_transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            amount REAL NOT NULL,
-            direction TEXT NOT NULL,
-            reason TEXT,
-            reference TEXT,
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id    INTEGER NOT NULL,
+            amount     REAL NOT NULL,
+            direction  TEXT NOT NULL,
+            reason     TEXT,
+            reference  TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(user_id) REFERENCES users(user_id)
-        )
-    """)
+        );
 
-    # Таблица платежей (из FALT_BOT)
-    cur.execute("""
         CREATE TABLE IF NOT EXISTS payments (
-            payment_id TEXT PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            service TEXT NOT NULL,
-            amount REAL NOT NULL,
-            currency TEXT DEFAULT 'RUB',
+            payment_id  TEXT PRIMARY KEY,
+            user_id     INTEGER NOT NULL,
+            service     TEXT NOT NULL,
+            amount      REAL NOT NULL,
+            currency    TEXT DEFAULT 'RUB',
             description TEXT,
-            payload TEXT,
-            status TEXT DEFAULT 'pending',
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            payload     TEXT,
+            status      TEXT DEFAULT 'pending',
+            created_at  TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at  TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(user_id) REFERENCES users(user_id)
-        )
-    """)
+        );
 
-    # Таблица сессий Mini App (НОВОЕ)
-    cur.execute("""
         CREATE TABLE IF NOT EXISTS mini_app_sessions (
-            session_id TEXT PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            auth_token TEXT UNIQUE,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            expires_at TEXT NOT NULL,
+            session_id    TEXT PRIMARY KEY,
+            user_id       INTEGER NOT NULL,
+            auth_token    TEXT UNIQUE,
+            created_at    TEXT DEFAULT CURRENT_TIMESTAMP,
+            expires_at    TEXT NOT NULL,
             last_activity TEXT DEFAULT CURRENT_TIMESTAMP,
-            device_info TEXT,
             FOREIGN KEY(user_id) REFERENCES users(user_id)
-        )
+        );
     """)
 
-    # Машинки по умолчанию (как в FALT_BOT_NEW)
+    # Машинки по умолчанию
     machines = [
         ("#1 Стиральная", 1),
         ("#2 Стиральная", 1),
@@ -110,52 +94,42 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 # ── Users ──────────────────────────────────────────────────────────────────
 
 def is_registered(user_id: int) -> Optional[User]:
     conn = get_connection()
     row = conn.execute(
-        "SELECT user_id, name, surname, wallet, email, label FROM users WHERE user_id = ?",
+        "SELECT user_id, name, surname, wallet, email FROM users WHERE user_id = ?",
         (user_id,),
     ).fetchone()
     conn.close()
     if row:
-        return User(
-            row["user_id"], 
-            row["name"], 
-            row["surname"], 
-            row["wallet"] or 0, 
-            row["email"],
-            row["label"] or 0
-        )
+        return User(row["user_id"], row["name"], row["surname"], row["wallet"] or 0, row["email"])
     return None
+
 
 def add_user(user: User):
     conn = get_connection()
     conn.execute(
-        "INSERT OR REPLACE INTO users (user_id, name, surname, wallet, label) VALUES (?, ?, ?, ?, ?)",
-        (user.user_id, user.name, user.surname, 0, user.label),
+        "INSERT OR REPLACE INTO users (user_id, name, surname, wallet) VALUES (?, ?, ?, 0)",
+        (user.user_id, user.name, user.surname),
     )
     conn.commit()
     conn.close()
 
+
 def get_user_by_email(email: str) -> Optional[User]:
     conn = get_connection()
     row = conn.execute(
-        "SELECT user_id, name, surname, wallet, email, label FROM users WHERE email = ?",
+        "SELECT user_id, name, surname, wallet, email FROM users WHERE email = ?",
         (email,),
     ).fetchone()
     conn.close()
     if row:
-        return User(
-            row["user_id"], 
-            row["name"], 
-            row["surname"], 
-            row["wallet"] or 0, 
-            row["email"],
-            row["label"] or 0
-        )
+        return User(row["user_id"], row["name"], row["surname"], row["wallet"] or 0, row["email"])
     return None
+
 
 def update_user_email(user_id: int, email: str) -> bool:
     try:
@@ -167,7 +141,8 @@ def update_user_email(user_id: int, email: str) -> bool:
     except Exception:
         return False
 
-# ── Registration clicks (FALT_BOT) ─────────────────────────────────────────
+
+# ── Registration clicks ────────────────────────────────────────────────────
 
 def registration_clicked(user_id: int) -> bool:
     conn = get_connection()
@@ -177,6 +152,7 @@ def registration_clicked(user_id: int) -> bool:
     conn.close()
     return row is not None
 
+
 def add_registration_click(user_id: int):
     conn = get_connection()
     conn.execute(
@@ -185,11 +161,13 @@ def add_registration_click(user_id: int):
     conn.commit()
     conn.close()
 
+
 def set_registration_click_status(user_id: int):
     conn = get_connection()
     conn.execute("DELETE FROM registration_clicks WHERE user_id = ?", (user_id,))
     conn.commit()
     conn.close()
+
 
 # ── Machines ───────────────────────────────────────────────────────────────
 
@@ -199,6 +177,7 @@ def get_machine_names() -> list[str]:
     conn.close()
     return [r["name"] for r in rows]
 
+
 def get_machine_status(machine_name: str) -> bool:
     conn = get_connection()
     row = conn.execute(
@@ -206,6 +185,7 @@ def get_machine_status(machine_name: str) -> bool:
     ).fetchone()
     conn.close()
     return bool(row["is_working"]) if row else False
+
 
 def change_machine_status(machine_name: str):
     conn = get_connection()
@@ -216,6 +196,7 @@ def change_machine_status(machine_name: str):
     conn.commit()
     conn.close()
 
+
 # ── Wallet ─────────────────────────────────────────────────────────────────
 
 def get_wallet_balance(user_id: int) -> int:
@@ -225,6 +206,7 @@ def get_wallet_balance(user_id: int) -> int:
     ).fetchone()
     conn.close()
     return int(round(float(row["wallet"] or 0))) if row else 0
+
 
 def debit_wallet(user_id: int, amount: int, reason: str, reference: str = None) -> bool:
     conn = get_connection()
@@ -242,6 +224,7 @@ def debit_wallet(user_id: int, amount: int, reason: str, reference: str = None) 
     conn.close()
     return True
 
+
 def credit_wallet(user_id: int, amount: int, reason: str, reference: str = None) -> int:
     conn = get_connection()
     row = conn.execute("SELECT wallet FROM users WHERE user_id = ?", (user_id,)).fetchone()
@@ -256,18 +239,20 @@ def credit_wallet(user_id: int, amount: int, reason: str, reference: str = None)
     conn.close()
     return int(round(new_bal))
 
+
 # ── Payments ───────────────────────────────────────────────────────────────
 
 def create_payment_record(payment_id, user_id, service, amount, currency, description, payload, status):
     conn = get_connection()
     conn.execute(
         """INSERT OR REPLACE INTO payments
-        (payment_id, user_id, service, amount, currency, description, payload, status)
-        VALUES (?,?,?,?,?,?,?,?)""",
+           (payment_id, user_id, service, amount, currency, description, payload, status)
+           VALUES (?,?,?,?,?,?,?,?)""",
         (payment_id, user_id, service, amount, currency, description, payload, status),
     )
     conn.commit()
     conn.close()
+
 
 def get_payment_record(payment_id: str) -> Optional[dict]:
     conn = get_connection()
@@ -276,6 +261,7 @@ def get_payment_record(payment_id: str) -> Optional[dict]:
     ).fetchone()
     conn.close()
     return dict(row) if row else None
+
 
 def update_payment_status(payment_id: str, status: str):
     conn = get_connection()
@@ -286,7 +272,8 @@ def update_payment_status(payment_id: str, status: str):
     conn.commit()
     conn.close()
 
-# ── Mini App sessions (НОВОЕ) ──────────────────────────────────────────────
+
+# ── Mini App sessions ──────────────────────────────────────────────────────
 
 def create_mini_app_session(user_id: int, device_info: str = "") -> str:
     import secrets
@@ -297,13 +284,14 @@ def create_mini_app_session(user_id: int, device_info: str = "") -> str:
     expires = (datetime.utcnow() + timedelta(days=JWT_EXPIRATION_DAYS)).isoformat()
     conn = get_connection()
     conn.execute(
-        """INSERT INTO mini_app_sessions (session_id, user_id, auth_token, expires_at, device_info)
-        VALUES (?, ?, ?, ?, ?)""",
-        (secrets.token_hex(16), user_id, token, expires, device_info),
+        """INSERT INTO mini_app_sessions (session_id, user_id, auth_token, expires_at)
+           VALUES (?, ?, ?, ?)""",
+        (secrets.token_hex(16), user_id, token, expires),
     )
     conn.commit()
     conn.close()
     return token
+
 
 def validate_session(token: str) -> Optional[int]:
     from datetime import datetime
@@ -311,7 +299,7 @@ def validate_session(token: str) -> Optional[int]:
     conn = get_connection()
     row = conn.execute(
         """SELECT user_id, expires_at FROM mini_app_sessions
-        WHERE auth_token = ? AND expires_at > datetime('now')""",
+           WHERE auth_token = ? AND expires_at > datetime('now')""",
         (token,),
     ).fetchone()
     if row:
@@ -320,10 +308,8 @@ def validate_session(token: str) -> Optional[int]:
             (token,),
         )
         conn.commit()
-        conn.close()
-        return row["user_id"]
     conn.close()
-    return None
+    return row["user_id"] if row else None
 
 def admin_add_money(user_id: int, amount: int) -> bool:
     """Добавить деньги пользователю (для админа)"""
@@ -333,7 +319,7 @@ def admin_add_money(user_id: int, amount: int) -> bool:
         if not row:
             conn.close()
             return False
-
+        
         new_bal = float(row["wallet"] or 0) + amount
         conn.execute("UPDATE users SET wallet = ? WHERE user_id = ?", (new_bal, user_id))
         conn.execute(
