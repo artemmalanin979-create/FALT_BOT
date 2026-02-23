@@ -1,7 +1,11 @@
+
+# handlers/email_handler.py
+# Дополнительный обработчик для установки email (для Mini App)
+
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums.content_type import ContentType
 from keyboards.keyboards import get_cancel_kb, get_start_kb
 import database.db as db
@@ -29,8 +33,9 @@ async def process_email(message: Message, state: FSMContext):
         return
 
     email = message.text.strip().lower()
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
+    # Валидация email
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     if not re.match(email_pattern, email):
         await message.answer(
             "Неверный формат email. Попробуйте еще раз.",
@@ -38,6 +43,7 @@ async def process_email(message: Message, state: FSMContext):
         )
         return
 
+    # Проверка, не занят ли email
     existing = db.get_user_by_email(email)
     if existing and existing.user_id != message.from_user.id:
         await message.answer(
@@ -46,11 +52,12 @@ async def process_email(message: Message, state: FSMContext):
         )
         return
 
+    # Сохраняем email
     success = db.update_user_email(message.from_user.id, email)
     if success:
         await message.answer(
             f"✅ Email {email} успешно привязан к вашему аккаунту!\n\n"
-            f"Теперь вы можете использовать Mini App через /miniapp",
+            f"Теперь вы можете использовать Mini App для бронирования.",
             reply_markup=get_start_kb()
         )
         await state.clear()
