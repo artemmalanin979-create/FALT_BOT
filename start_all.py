@@ -27,7 +27,6 @@ async def run_bot():
     from handlers.admin_manage_laundry import manage_laundry_router
     from handlers.study_room_handler import sr_router
     from handlers.wallet_handler import wallet_router
-    from handlers.email_handler import email_router
     from handlers.mini_app_handler import mini_app_router
     from database.db import init_db
     from config import TOKEN
@@ -37,8 +36,7 @@ async def run_bot():
     dp = Dispatcher()
 
     for router in [main_router, reg_router, admin_router, laundry_router,
-                   manage_laundry_router, sr_router, wallet_router,
-                   email_router, mini_app_router]:
+                   manage_laundry_router, sr_router, wallet_router, mini_app_router]:
         dp.include_router(router)
 
     await bot.set_my_commands(
@@ -46,7 +44,6 @@ async def run_bot():
         commands=[
             BotCommand(command="start", description="Главное меню"),
             BotCommand(command="miniapp", description="Открыть Mini App"),
-            BotCommand(command="setemail", description="Привязать email"),
             BotCommand(command="wallet", description="Кошелёк"),
             BotCommand(command="bookings", description="Мои записи"),
         ],

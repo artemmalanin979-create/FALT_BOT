@@ -31,7 +31,7 @@
 
 #### 2. `config.py`
 **Добавлено:**
-python
+```python
 # Mini App
 MINI_APP_URL = os.getenv("MINI_APP_URL", "")
 WEBAPP_HOST = os.getenv("WEBAPP_HOST", "0.0.0.0")
@@ -44,11 +44,11 @@ JWT_EXPIRATION_DAYS = int(os.getenv("JWT_EXPIRATION_DAYS", "7"))
 
 # CORS
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")
-
+```
 
 #### 3. `bot.py`
 **Добавлено:**
-python
+```python
 from handlers.email_handler import email_router
 from handlers.mini_app_handler import mini_app_router
 
@@ -60,17 +60,17 @@ dp.include_router(mini_app_router)
 BotCommand(command="miniapp", description="Открыть Mini App"),
 BotCommand(command="setemail", description="Привязать email к Mini App"),
 BotCommand(command="bookings", description="Мои записи"),
-
+```
 
 #### 4. `requirements.txt`
 **Добавлено:**
-
+```
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
 python-multipart==0.0.12
 pydantic[email]==2.10.6
 email-validator==2.2.0
-
+```
 
 ## 🔧 Переменные окружения
 
@@ -91,20 +91,20 @@ email-validator==2.2.0
 ## 🚀 Пошаговая инструкция по деплою
 
 ### Шаг 1: Миграция базы данных
-
+```bash
 # На сервере с существующей БД
 python migrate.py
-
+```
 Это добавит:
 - Колонку `email` в таблицу `users`
 - Таблицу `mini_app_sessions` для JWT
 
 ### Шаг 2: Настройка переменных окружения
-
+```bash
 # Добавьте в .env:
 MINI_APP_URL=https://your-domain.up.railway.app
 JWT_SECRET_KEY=your_generated_secret_key
-
+```
 
 ### Шаг 3: Деплой на Railway (рекомендуется)
 1. Подключите GitHub репозиторий к Railway
@@ -114,11 +114,11 @@ JWT_SECRET_KEY=your_generated_secret_key
 5. Обновите `MINI_APP_URL` этим значением
 
 ### Шаг 4: Настройка BotFather
-
+```
 /mybots → Ваш бот → Bot Settings → Menu Button → Web App
 Название: 🧺 FALT App
 URL: https://your-domain.up.railway.app
-
+```
 
 ### Шаг 5: Тестирование
 1. Отправьте `/start` - бот должен работать как раньше
@@ -129,14 +129,14 @@ URL: https://your-domain.up.railway.app
 ## 🧪 Тестирование
 
 ### Тест 1: Обратная совместимость
-
+```
 /start → Главное меню (как раньше)
 /registration → Регистрация (как раньше)
 /wallet → Кошелек (как раньше)
-
+```
 
 ### Тест 2: Mini App
-
+```
 /setemail → Ввод email → ✅ Email привязан
 /miniapp → Кнопка "Открыть Mini App" → WebApp открывается
 В Mini App:
@@ -145,7 +145,7 @@ URL: https://your-domain.up.railway.app
   - Выбор машинки
   - Бронирование
   - Списание средств
-
+```
 
 ### Тест 3: Безопасность
 - Попытка входа с неверным email → Ошибка
@@ -154,7 +154,7 @@ URL: https://your-domain.up.railway.app
 
 ## 📁 Структура файлов
 
-
+```
 FALT_BOT_INTEGRATED/
 ├── bot.py                    # Точка входа (только бот)
 ├── start_all.py             # Единый запуск (бот + Mini App)
@@ -202,7 +202,7 @@ FALT_BOT_INTEGRATED/
     │   └── js/
     └── templates/
         └── index.html       # Интерфейс Mini App
-
+```
 
 ## ⚠️ Важные замечания
 
@@ -227,20 +227,20 @@ FALT_BOT_INTEGRATED/
 ## 🔍 Отладка
 
 ### Логи Railway
-
+```bash
 railway logs
-
+```
 
 ### Локальный запуск с отладкой
-
+```bash
 DEBUG=True python start_all.py
-
+```
 
 ### Проверка БД
-
+```bash
 sqlite3 database/falt.db ".schema users"
 sqlite3 database/falt.db ".schema mini_app_sessions"
-
+```
 
 ## 📞 Поддержка
 
