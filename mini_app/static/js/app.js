@@ -17,8 +17,16 @@ document.addEventListener('DOMContentLoaded', function() {
         validateSession();
     } else {
         showPage('login');
+        handleLogin();
     }
 });
+
+function getTelegramUserId() {
+    if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
+        return null;
+    }
+    return tg.initDataUnsafe.user.id || null;
+}
 
 async function validateSession() {
     try {
@@ -66,15 +74,9 @@ function showPage(pageId) {
 
 // ВХОД — глобальная функция
 function handleLogin() {
-    var emailInput = document.getElementById('email-input');
-    if (!emailInput) {
-        alert('Поле email не найдено');
-        return;
-    }
-    
-    var email = emailInput.value.trim();
-    if (!email) {
-        alert('Введите email');
+    var telegramId = getTelegramUserId();
+    if (!telegramId) {
+        showPage('auth-error');
         return;
     }
     
@@ -87,9 +89,16 @@ function handleLogin() {
     fetch(API_URL + '/auth/login', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email: email})
+        body: JSON.stringify({telegram_id: telegramId})
     })
-    .then(function(res) { return res.json(); })
+    .then(function(res) {
+        return res.json().then(function(data) {
+            if (!res.ok) {
+                throw new Error(data.detail || data.message || 'Ошибка входа');
+            }
+            return data;
+        });
+    })
     .then(function(data) {
         if (data.success && data.token) {
             token = data.token;
@@ -99,11 +108,11 @@ function handleLogin() {
             showPage('home-step1');
             loadMachines();
         } else {
-            throw new Error(data.message || 'Ошибка входа');
+            throw new Error(data.detail || data.message || 'Ошибка входа');
         }
     })
     .catch(function(e) {
-        alert('Ошибка: ' + e.message);
+        alert('Ошибка входа: ' + e.message);
         if (loginForm) loginForm.style.display = 'block';
         if (loading) loading.style.display = 'none';
     });
@@ -115,6 +124,7 @@ function logout() {
     localStorage.removeItem('falt_token');
     localStorage.removeItem('falt_user');
     showPage('login');
+    handleLogin();
 }
 
 function apiGet(endpoint) {

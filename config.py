@@ -29,7 +29,9 @@ WEBAPP_HOST = os.getenv("WEBAPP_HOST", "0.0.0.0")
 WEBAPP_PORT = int(os.getenv("WEBAPP_PORT", "8000"))
 
 # JWT для Mini App сессий
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")  # Генерировать: python -c "import secrets; print(secrets.token_hex(32))"
+JWT_SECRET_KEY = os.getenv(
+    "JWT_SECRET_KEY"
+)  # Генерировать: python -c "import secrets; print(secrets.token_hex(32))"
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 JWT_EXPIRATION_DAYS = int(os.getenv("JWT_EXPIRATION_DAYS", "7"))
 

@@ -166,28 +166,41 @@
         .time-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 20px;
+            background: linear-gradient(145deg, rgba(36, 129, 204, 0.08), rgba(36, 129, 204, 0.02));
+            border: 1px solid rgba(36, 129, 204, 0.16);
+            border-radius: 16px;
+            padding: 12px;
         }
         
         .time-slot {
             padding: 16px 8px;
-            background: var(--tg-secondary-bg);
-            border-radius: 12px;
+            background: var(--tg-bg);
+            border-radius: 14px;
             text-align: center;
             cursor: pointer;
             font-size: 14px;
-            font-weight: 500;
-            border: 2px solid transparent;
-            transition: all 0.2s;
+            font-weight: 600;
+            border: 1px solid rgba(36, 129, 204, 0.2);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+            transition: all 0.18s ease;
         }
         
         .time-slot.available {
-            background: #e8f5e9;
+            background: linear-gradient(180deg, #ebfff0, #daf8e2);
+            color: #1f6d2d;
+        }
+
+        .time-slot.available:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 18px rgba(19, 99, 37, 0.18);
         }
         
         .time-slot.booked {
-            background: #ffebee;
+            background: linear-gradient(180deg, #fff2f4, #ffe2e7);
+            border-color: rgba(199, 44, 65, 0.24);
+            box-shadow: none;
             color: var(--tg-hint);
             cursor: not-allowed;
             text-decoration: line-through;
@@ -195,8 +208,9 @@
         
         .time-slot.selected {
             border-color: var(--tg-button);
-            background: var(--tg-button);
+            background: linear-gradient(180deg, #2e92e3, var(--tg-button));
             color: var(--tg-button-text);
+            box-shadow: 0 10px 20px rgba(36, 129, 204, 0.32);
         }
         
         /* Кнопки действий */
@@ -362,6 +376,7 @@
             text-align: center;
             color: var(--tg-hint);
             margin-top: 16px;
+            line-height: 1.4;
         }
         
         /* Toast */
@@ -414,16 +429,22 @@
                 <p>Бронирование стиральных машин</p>
             </div>
             <div id="login-form">
-                <div class="input-group">
-                    <input type="email" id="email-input" placeholder="your@email.ru">
-                </div>
-                <button class="btn-primary" onclick="handleLogin()">Войти</button>
-                <p class="hint">Введите email из бота</p>
+                <button class="btn-primary" onclick="handleLogin()">Войти через Telegram</button>
+                <p class="hint">Авторизация происходит автоматически по вашему Telegram аккаунту</p>
             </div>
             <div id="loading" style="display: none;">
                 <div class="spinner"></div>
                 <p>Вход...</p>
             </div>
+        </div>
+    </div>
+
+    <div id="auth-error" class="page">
+        <div class="placeholder">
+            <div class="placeholder-icon">⚠️</div>
+            <h3>Не удалось авторизоваться</h3>
+            <p>Откройте Mini App через кнопку в Telegram-боте FALT</p>
+            <button class="btn-primary" onclick="handleLogin()">Попробовать снова</button>
         </div>
     </div>
 
@@ -502,7 +523,7 @@
             <div class="placeholder-icon">📋</div>
             <h3>Нет записей</h3>
             <p>Забронируйте стиральную машину</p>
-            <button class="btn-primary" onclick="showPage('home')">Записаться</button>
+            <button class="btn-primary" onclick="showPage('home-step1')">Записаться</button>
         </div>
     </div>
 

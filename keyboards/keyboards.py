@@ -4,38 +4,84 @@ from database.db import is_registered
 
 
 def get_main_menu_kb(user_id) -> InlineKeyboardMarkup:
-    
     if not is_registered(user_id):
-        inline_kb_list = [[InlineKeyboardButton(text="Зарегистрироваться", callback_data="registration")]]
+        inline_kb_list = [
+            [
+                InlineKeyboardButton(
+                    text="Зарегистрироваться", callback_data="registration"
+                )
+            ]
+        ]
         return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)
-    
+
     inline_kb_list = [
-        [InlineKeyboardButton(text="Записаться на стирку", callback_data='laundry_record')],
-        [InlineKeyboardButton(text="Забронировать боталку", callback_data='studyroom_record')],
-        [InlineKeyboardButton(text="Кошелек", callback_data='wallet')],
-        [InlineKeyboardButton(text="Тех. поддержка", callback_data='support')],
-        [InlineKeyboardButton(text="Мои записи", callback_data="laundry_my")]
+        [
+            InlineKeyboardButton(
+                text="Записаться на стирку", callback_data="laundry_record"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Забронировать боталку", callback_data="studyroom_record"
+            )
+        ],
+        [InlineKeyboardButton(text="Кошелек", callback_data="wallet")],
+        [InlineKeyboardButton(text="Тех. поддержка", callback_data="support")],
+        [InlineKeyboardButton(text="Мои записи", callback_data="laundry_my")],
     ]
-    
+
     return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)
 
+
 def get_start_kb() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Перейти в главное меню", callback_data="start_from_button")]])
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Перейти в главное меню", callback_data="start_from_button"
+                )
+            ]
+        ]
+    )
+
 
 def get_cancel_kb() -> InlineKeyboardMarkup:
     inline_kb_list = [[InlineKeyboardButton(text="Отмена", callback_data="cancel")]]
-    
+
     return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)
+
 
 def get_accept_registration_admin_kb(user_id, name, surname) -> InlineKeyboardMarkup:
     inline_kb_list = [
-        [InlineKeyboardButton(text="Подтвердить", callback_data=f"{user_id} registration_admin_accept")],
-        [InlineKeyboardButton(text="Отклонить", callback_data=f"{user_id} registration_admin_decline")]
+        [
+            InlineKeyboardButton(
+                text="Подтвердить", callback_data=f"{user_id} registration_admin_accept"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Отклонить", callback_data=f"{user_id} registration_admin_decline"
+            )
+        ],
     ]
     return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)
-def get_accept_studyroom_record_admin_kb(user_id, date, time_slot) -> InlineKeyboardMarkup:
+
+
+def get_accept_studyroom_record_admin_kb(
+    user_id, date, time_slot
+) -> InlineKeyboardMarkup:
     inline_kb_list = [
-        [InlineKeyboardButton(text="Подтвердить", callback_data=f"{user_id} {date} {time_slot} studyroom_accept")],
-        [InlineKeyboardButton(text="Отклонить", callback_data=f"{user_id} {date} {time_slot} studyroom_decline")]
+        [
+            InlineKeyboardButton(
+                text="Подтвердить",
+                callback_data=f"{user_id} {date} {time_slot} studyroom_accept",
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Отклонить",
+                callback_data=f"{user_id} {date} {time_slot} studyroom_decline",
+            )
+        ],
     ]
     return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)

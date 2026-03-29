@@ -3,6 +3,7 @@
 Единый запуск Telegram-бота и Mini App сервера.
 Использовать для Railway/Docker: python start_all.py
 """
+
 import asyncio
 import logging
 import os
@@ -43,9 +44,17 @@ async def run_bot():
     bot = Bot(token=TOKEN)
     dp = Dispatcher()
 
-    for router in [main_router, reg_router, admin_router, laundry_router,
-                   manage_laundry_router, sr_router, wallet_router,
-                   email_router, mini_app_router]:
+    for router in [
+        main_router,
+        reg_router,
+        admin_router,
+        laundry_router,
+        manage_laundry_router,
+        sr_router,
+        wallet_router,
+        email_router,
+        mini_app_router,
+    ]:
         dp.include_router(router)
 
     await bot.set_my_commands(

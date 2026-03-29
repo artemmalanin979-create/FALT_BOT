@@ -97,6 +97,7 @@ def init_db():
 
 # ── Users ──────────────────────────────────────────────────────────────────
 
+
 def is_registered(user_id: int) -> Optional[User]:
     conn = get_connection()
     row = conn.execute(
@@ -105,7 +106,13 @@ def is_registered(user_id: int) -> Optional[User]:
     ).fetchone()
     conn.close()
     if row:
-        return User(row["user_id"], row["name"], row["surname"], row["wallet"] or 0, row["email"])
+        return User(
+            row["user_id"],
+            row["name"],
+            row["surname"],
+            row["wallet"] or 0,
+            row["email"],
+        )
     return None
 
 
@@ -127,7 +134,13 @@ def get_user_by_email(email: str) -> Optional[User]:
     ).fetchone()
     conn.close()
     if row:
-        return User(row["user_id"], row["name"], row["surname"], row["wallet"] or 0, row["email"])
+        return User(
+            row["user_id"],
+            row["name"],
+            row["surname"],
+            row["wallet"] or 0,
+            row["email"],
+        )
     return None
 
 
@@ -143,6 +156,7 @@ def update_user_email(user_id: int, email: str) -> bool:
 
 
 # ── Registration clicks ────────────────────────────────────────────────────
+
 
 def registration_clicked(user_id: int) -> bool:
     conn = get_connection()
@@ -170,6 +184,7 @@ def set_registration_click_status(user_id: int):
 
 
 # ── Machines ───────────────────────────────────────────────────────────────
+
 
 def get_machine_names() -> list[str]:
     conn = get_connection()
@@ -199,6 +214,7 @@ def change_machine_status(machine_name: str):
 
 # ── Wallet ─────────────────────────────────────────────────────────────────
 
+
 def get_wallet_balance(user_id: int) -> int:
     conn = get_connection()
     row = conn.execute(
@@ -210,7 +226,9 @@ def get_wallet_balance(user_id: int) -> int:
 
 def debit_wallet(user_id: int, amount: int, reason: str, reference: str = None) -> bool:
     conn = get_connection()
-    row = conn.execute("SELECT wallet FROM users WHERE user_id = ?", (user_id,)).fetchone()
+    row = conn.execute(
+        "SELECT wallet FROM users WHERE user_id = ?", (user_id,)
+    ).fetchone()
     if not row or float(row["wallet"] or 0) < amount:
         conn.close()
         return False
@@ -227,7 +245,9 @@ def debit_wallet(user_id: int, amount: int, reason: str, reference: str = None) 
 
 def credit_wallet(user_id: int, amount: int, reason: str, reference: str = None) -> int:
     conn = get_connection()
-    row = conn.execute("SELECT wallet FROM users WHERE user_id = ?", (user_id,)).fetchone()
+    row = conn.execute(
+        "SELECT wallet FROM users WHERE user_id = ?", (user_id,)
+    ).fetchone()
     current = float(row["wallet"] or 0) if row else 0
     new_bal = current + amount
     conn.execute("UPDATE users SET wallet = ? WHERE user_id = ?", (new_bal, user_id))
@@ -242,7 +262,10 @@ def credit_wallet(user_id: int, amount: int, reason: str, reference: str = None)
 
 # ── Payments ───────────────────────────────────────────────────────────────
 
-def create_payment_record(payment_id, user_id, service, amount, currency, description, payload, status):
+
+def create_payment_record(
+    payment_id, user_id, service, amount, currency, description, payload, status
+):
     conn = get_connection()
     conn.execute(
         """INSERT OR REPLACE INTO payments
@@ -274,6 +297,7 @@ def update_payment_status(payment_id: str, status: str):
 
 
 # ── Mini App sessions ──────────────────────────────────────────────────────
+
 
 def create_mini_app_session(user_id: int, device_info: str = "") -> str:
     import secrets
@@ -311,17 +335,22 @@ def validate_session(token: str) -> Optional[int]:
     conn.close()
     return row["user_id"] if row else None
 
+
 def admin_add_money(user_id: int, amount: int) -> bool:
     """Добавить деньги пользователю (для админа)"""
     try:
         conn = get_connection()
-        row = conn.execute("SELECT wallet FROM users WHERE user_id = ?", (user_id,)).fetchone()
+        row = conn.execute(
+            "SELECT wallet FROM users WHERE user_id = ?", (user_id,)
+        ).fetchone()
         if not row:
             conn.close()
             return False
-        
+
         new_bal = float(row["wallet"] or 0) + amount
-        conn.execute("UPDATE users SET wallet = ? WHERE user_id = ?", (new_bal, user_id))
+        conn.execute(
+            "UPDATE users SET wallet = ? WHERE user_id = ?", (new_bal, user_id)
+        )
         conn.execute(
             "INSERT INTO wallet_transactions (user_id, amount, direction, reason) VALUES (?,?,?,?)",
             (user_id, amount, "credit", "admin_add"),

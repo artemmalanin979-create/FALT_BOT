@@ -1,0 +1,54 @@
+
+# docker-compose.yml для деплоя
+version: '3.8'
+
+services:
+  falt-bot:
+    build: .
+    container_name: falt-telegram-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./database:/app/database
+      - ./logs:/app/logs
+      - ./data:/app/data
+    command: python bot_integration/bot_updated.py
+    networks:
+      - falt-network
+
+  falt-miniapp:
+    build: .
+    container_name: falt-mini-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./database:/app/database
+      - ./logs:/app/logs
+      - ./data:/app/data
+    command: uvicorn mini_app.web_server:app --host 0.0.0.0 --port 8000
+    networks:
+      - falt-network
+
+  # Опционально: nginx для HTTPS
+  nginx:
+    image: nginx:alpine
+    container_name: falt-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - falt-miniapp
+    networks:
+      - falt-network
+
+networks:
+  falt-network:
+    driver: bridge
