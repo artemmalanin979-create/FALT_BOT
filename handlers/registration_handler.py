@@ -18,7 +18,6 @@ class Registration(StatesGroup):
     photo = State()
     name = State()
     surname = State()
-    email = State()
 
 
 @reg_router.callback_query(F.data == "registration")
@@ -62,29 +61,13 @@ async def ask_surname(message: Message, state: FSMContext):
 
 
 @reg_router.message(Registration.surname)
-async def ask_email(message: Message, state: FSMContext):
+async def process_surname(message: Message, state: FSMContext):
     if message.content_type != ContentType.TEXT:
         await message.answer(
             "Неверный формат! Отправьте текст!", reply_markup=get_cancel_kb()
         )
         return
-    await state.update_data(surname=message.text.strip())
-    await state.set_state(Registration.email)
-    await message.answer("Введите ваш email (нужен для входа в Mini App):")
-
-
-@reg_router.message(Registration.email)
-async def process_email(message: Message, state: FSMContext):
-    if message.content_type != ContentType.TEXT:
-        await message.answer("Введите email текстом!", reply_markup=get_cancel_kb())
-        return
-
-    email = message.text.strip().lower()
-    if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
-        await message.answer("Неверный формат email. Попробуйте ещё раз:")
-        return
-
-    data = await state.update_data(email=email)
+    data = await state.update_data(surname=message.text.strip())
     await send_to_admin(message, data)
     await state.clear()
 
@@ -93,11 +76,10 @@ async def send_to_admin(message: Message, data: dict):
     await message.bot.send_photo(
         ADMIN_CHAT_ID,
         photo=data["photo"],
-        caption=f"Пользователь: {data['name']} {data['surname']}\nEmail: {data['email']}",
+        caption=f"Пользователь: {data['name']} {data['surname']}",
         reply_markup=get_accept_registration_admin_kb(
             message.chat.id, data["name"], data["surname"]
         ),
-        # email убрали из клавиатуры — берём из caption при одобрении
     )
     add_registration_click(message.from_user.id)
     await message.answer("Заявка отправлена на рассмотрение администратора!")

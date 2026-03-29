@@ -157,15 +157,17 @@ function apiPost(endpoint, data) {
 function updateHeaderBalance() {
     if (!user) return;
     var balance = user.wallet || 0;
-    var el1 = document.getElementById('header-balance'); // для home-step1
-    var el2 = document.getElementById('balance');        // возможно другое ID
-    var el3 = document.getElementById('balance2');       // для home-step2
-    var el4 = document.getElementById('balance3');       // для home-step3
+    var el1 = document.getElementById('header-balance');
+    var el2 = document.getElementById('balance');
+    var el3 = document.getElementById('balance2');
+    var el4 = document.getElementById('balance2b');
+    var el5 = document.getElementById('balance3');
     
     if (el1) el1.textContent = balance;
     if (el2) el2.textContent = balance;
     if (el3) el3.textContent = balance;
     if (el4) el4.textContent = balance;
+    if (el5) el5.textContent = balance;
 }
 
 function renderDays() {
@@ -210,6 +212,18 @@ function selectDate(date, element) {
         el.classList.remove('active');
     });
     element.classList.add('active');
+    
+    // Автоматически переходим на этап выбора времени
+    var dayLabel = element.querySelector('.day-name').textContent;
+    var dayNum = element.querySelector('.day-number').textContent;
+    var display = document.getElementById('selected-day-display');
+    if (display) {
+        display.textContent = (dayLabel === 'Сегодня' ? 'Сегодня' : dayLabel) + ' ' + dayNum;
+    }
+    
+    updateHeaderBalance();
+    loadTimeSlots();
+    showPage('home-step2b');
 }
 
 function loadMachines() {
@@ -251,12 +265,16 @@ function selectMachine(id, name, isWorking) {
     selectedMachine = {id: id, name: name};
     var title = document.getElementById('selected-machine-name');
     if (title) title.textContent = name;
-    loadTimeSlots();
+    renderDays();
     showPage('home-step2');
 }
 
 function backToMachines() {
     showPage('home-step1');
+}
+
+function backToDay() {
+    showPage('home-step2');
 }
 
 function loadTimeSlots() {
@@ -298,7 +316,7 @@ function selectTime(start, end) {
 }
 
 function backToTime() {
-    showPage('home-step2');
+    showPage('home-step2b');
 }
 
 function confirmBooking() {

@@ -30,11 +30,9 @@ async def accepting_registration(call: CallbackQuery):
     name_surname = lines[0].replace("Пользователь: ", "").strip().split()
     name = name_surname[0]
     surname = name_surname[1] if len(name_surname) > 1 else ""
-    email = lines[1].replace("Email: ", "").strip() if len(lines) > 1 else ""
 
     user = User(user_id, name, surname)
     add_user(user)
-    update_user_email(user_id, email)
 
     await call.bot.edit_message_caption(
         message_id=call.message.message_id,

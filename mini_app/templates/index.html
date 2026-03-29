@@ -462,10 +462,10 @@
         <div class="machines-grid" id="machines-list"></div>
     </div>
 
-    <!-- Главная - Шаг 2: Выбор времени -->
+    <!-- Главная - Шаг 2: Выбор дня -->
     <div id="home-step2" class="page">
         <div class="header">
-            <h2>Выберите время</h2>
+            <h2>Выберите день</h2>
             <div class="balance-badge"><span id="balance2">0</span> ₽</div>
         </div>
         <div class="step-indicator">
@@ -474,8 +474,24 @@
             <div class="step-dot"></div>
         </div>
         <div class="step-title" id="selected-machine-name"></div>
-        <div class="time-grid" id="time-slots"></div>
+        <div id="days-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;"></div>
         <button class="btn-secondary" onclick="backToMachines()">← Назад</button>
+    </div>
+
+    <!-- Главная - Шаг 2.5: Выбор времени -->
+    <div id="home-step2b" class="page">
+        <div class="header">
+            <h2>Выберите время</h2>
+            <div class="balance-badge"><span id="balance2b">0</span> ₽</div>
+        </div>
+        <div class="step-indicator">
+            <div class="step-dot active"></div>
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+        </div>
+        <div class="step-title" id="selected-day-display"></div>
+        <div class="time-grid" id="time-slots"></div>
+        <button class="btn-secondary" onclick="backToDay()">← Назад</button>
     </div>
 
     <!-- Главная - Шаг 3: Подтверждение -->

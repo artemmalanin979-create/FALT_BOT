@@ -1,3 +1,4 @@
+import os
 from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import (
@@ -14,8 +15,12 @@ main_router = Router()
 
 @main_router.message(CommandStart())
 async def start_message(message: Message):
+    photo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "falt.jpg")
+    if not os.path.exists(photo_path):
+        await message.answer("Добро пожаловать в Сервисы ФАЛТ 2.0!", reply_markup=get_main_menu_kb(message.chat.id))
+        return
     await message.answer_photo(
-        photo=FSInputFile("falt.jpg"),
+        photo=FSInputFile(photo_path),
         caption="Добро пожаловать в Сервисы ФАЛТ 2.0!",
         reply_markup=get_main_menu_kb(message.chat.id),
     )
@@ -23,10 +28,15 @@ async def start_message(message: Message):
 
 @main_router.callback_query(F.data == "start_from_button")
 async def start_message_from_button(call: CallbackQuery):
+    photo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "falt.jpg")
+    if not os.path.exists(photo_path):
+        await call.message.delete()
+        await call.message.answer("Добро пожаловать в Сервисы ФАЛТ 2.0!", reply_markup=get_main_menu_kb(call.message.chat.id))
+        return
     # Удаляем старое сообщение и отправляем новое фото вместо редактирования
     await call.message.delete()
     await call.message.answer_photo(
-        photo=FSInputFile("falt.jpg"),
+        photo=FSInputFile(photo_path),
         caption="Добро пожаловать в Сервисы ФАЛТ 2.0!",
         reply_markup=get_main_menu_kb(call.message.chat.id),
     )
@@ -34,10 +44,15 @@ async def start_message_from_button(call: CallbackQuery):
 
 @main_router.callback_query(F.data == "cancel")
 async def cancel_action(call: CallbackQuery):
+    photo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "falt.jpg")
+    if not os.path.exists(photo_path):
+        await call.message.delete()
+        await call.message.answer("Добро пожаловать в Сервисы ФАЛТ 2.0!", reply_markup=get_main_menu_kb(call.message.chat.id))
+        return
     # То же самое для кнопки отмены
     await call.message.delete()
     await call.message.answer_photo(
-        photo=FSInputFile("falt.jpg"),
+        photo=FSInputFile(photo_path),
         caption="Добро пожаловать в Сервисы ФАЛТ 2.0!",
         reply_markup=get_main_menu_kb(call.message.chat.id),
     )
